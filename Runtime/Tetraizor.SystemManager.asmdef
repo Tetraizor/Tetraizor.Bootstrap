@@ -1,0 +1,16 @@
+{
+    "name": "Tetraizor.Systems",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2e20b8eb9ce74e74fbcde34b0a8d4627"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
