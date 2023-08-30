@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Tetraizor.Singleton;
+using Tetraizor.MonoSingleton;
 using UnityEngine;
 using Tetraizor.SystemManager.Base;
 using UnityEngine.Events;
