@@ -70,9 +70,9 @@ namespace Tetraizor.Bootstrap
             // Instantiate and load each system.
             foreach (GameObject systemPrefab in _systems)
             {
-                int startTime = DateTime.Now.Millisecond;
+                double startTime = Time.realtimeSinceStartupAsDouble;
 
-                IPersistentSystem persistentSystem = LoadSystem(systemPrefab);
+                IPersistentSystem persistentSystem = InstantiateSystem(systemPrefab);
 
                 if (persistentSystem == null)
                 {
@@ -85,9 +85,10 @@ namespace Tetraizor.Bootstrap
 
                 _loadedSystemCount++;
 
-                int endTime = DateTime.Now.Millisecond;
+                double endTime = Time.realtimeSinceStartupAsDouble;
+
                 SystemLoadFinishEvent?.Invoke(persistentSystem);
-                MessageSendEvent?.Invoke($"{persistentSystem.GetName()} finished loading in {(endTime - startTime)} milliseconds.");
+                MessageSendEvent?.Invoke($"{persistentSystem.GetName()} finished loading in {(int)((endTime - startTime) * 1000)} milliseconds.");
             }
 
             // Reset active scene back to boot scene.
@@ -97,7 +98,7 @@ namespace Tetraizor.Bootstrap
 
             BootCompleteEvent?.Invoke();
 
-            MessageSendEvent?.Invoke("Finished loading all the systems.");
+            MessageSendEvent?.Invoke("Finished loading all systems.");
         }
 
         public void UpdateLoadingState(IPersistentSystem system, float loadingPercentage)
@@ -109,7 +110,7 @@ namespace Tetraizor.Bootstrap
         }
 
         // Get System from prefabs 
-        private IPersistentSystem LoadSystem(GameObject systemPrefab)
+        private IPersistentSystem InstantiateSystem(GameObject systemPrefab)
         {
             GameObject systemInstance = Instantiate(systemPrefab, Vector3.zero, Quaternion.identity);
 
