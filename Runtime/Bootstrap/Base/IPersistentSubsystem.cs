@@ -1,6 +1,8 @@
+using System;
 using Tetraizor.Bootstrap.Base;
 
-public interface IPersistentSubsystem<T> where T : IPersistentSystem
+public interface IPersistentSubsystem
 {
-    public void Init(T system);
+    public string GetSystemName();
+    public void Init(IPersistentSystem system);
 }

@@ -15,6 +15,8 @@ namespace Tetraizor.Bootstrap
 
         [Header("System Properties")]
         [SerializeField] private List<GameObject> _systems = new(); // Must be assigned by hand to contain all System prefabs.
+        [SerializeField] private List<GameObject> _subsystems = new(); // Must be assigned by hand to contain all Subsystem prefabs.
+
 
         [Header("Common Scene Indices")]
         [SerializeField] private int _bootSceneIndex = 0; // Scene that system loading happens.
@@ -72,13 +74,32 @@ namespace Tetraizor.Bootstrap
             {
                 double startTime = Time.realtimeSinceStartupAsDouble;
 
-                IPersistentSystem persistentSystem = InstantiateSystem(systemPrefab);
+                GameObject persistentSystemInstance = InstantiateSystem(systemPrefab);
+                IPersistentSystem persistentSystem = persistentSystemInstance.GetComponent<IPersistentSystem>();
 
                 if (persistentSystem == null)
                 {
                     MessageSendEvent?.Invoke($"{systemPrefab.name} does not implement the interface 'IPersistentScene'. " +
                                                       $"This system will be ignored.");
                     continue;
+                }
+
+                // Load subsystems.
+                foreach (GameObject subsystemPrefab in _subsystems)
+                {
+                    IPersistentSubsystem subsystem = subsystemPrefab.GetComponent<IPersistentSubsystem>();
+
+                    if (subsystem == null)
+                    {
+                        MessageSendEvent?.Invoke($"Subsystem '{subsystemPrefab.name}' does not contain a IPersistentSubsystem, prefab will be ignored.");
+                        continue;
+                    }
+
+                    // If subsystem target name matches, init it. 
+                    if (subsystem.GetSystemName().CompareTo(persistentSystem.GetName()) == 0)
+                    {
+                        GameObject subsystemGameObject = Instantiate(subsystemPrefab, persistentSystemInstance.transform);
+                    }
                 }
 
                 yield return persistentSystem.LoadSystem();
@@ -110,15 +131,13 @@ namespace Tetraizor.Bootstrap
         }
 
         // Get System from prefabs 
-        private IPersistentSystem InstantiateSystem(GameObject systemPrefab)
+        private GameObject InstantiateSystem(GameObject systemPrefab)
         {
             GameObject systemInstance = Instantiate(systemPrefab, Vector3.zero, Quaternion.identity);
 
             systemInstance.name = systemPrefab.name;
 
-            IPersistentSystem persistentSystem = systemInstance.GetComponent<IPersistentSystem>();
-
-            return persistentSystem;
+            return systemInstance;
         }
 
         #endregion
