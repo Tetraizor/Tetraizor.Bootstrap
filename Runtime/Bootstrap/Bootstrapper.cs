@@ -99,6 +99,7 @@ namespace Tetraizor.Bootstrap
                     if (subsystem.GetSystemName().CompareTo(persistentSystem.GetName()) == 0)
                     {
                         GameObject subsystemGameObject = Instantiate(subsystemPrefab, persistentSystemInstance.transform);
+                        subsystemGameObject.name = subsystemPrefab.name + "(Plugin)";
                     }
                 }
 
