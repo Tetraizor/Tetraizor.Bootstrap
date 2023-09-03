@@ -4,10 +4,10 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
-using Tetraizor.Bootstrapper.Base;
+using Tetraizor.Bootstrap.Base;
 using Tetraizor.MonoSingleton;
 
-namespace Tetraizor.Bootstrapper
+namespace Tetraizor.Bootstrap
 {
     public class Bootstrapper : MonoSingleton<Bootstrapper>
     {

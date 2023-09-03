@@ -1,5 +1,5 @@
 {
-    "name": "Tetraizor.Bootstrapper",
+    "name": "Tetraizor.Bootstrap",
     "rootNamespace": "",
     "references": [
         "GUID:2e20b8eb9ce74e74fbcde34b0a8d4627"
