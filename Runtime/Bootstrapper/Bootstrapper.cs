@@ -1,38 +1,47 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using Tetraizor.MonoSingleton;
+using System.Collections;
+using System;
 using UnityEngine;
-using Tetraizor.SystemManager.Base;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using Tetraizor.Bootstrapper.Base;
+using Tetraizor.MonoSingleton;
 
-namespace Tetraizor.SystemManager
+namespace Tetraizor.Bootstrapper
 {
-    public class SystemLoader : MonoSingleton<SystemLoader>
+    public class Bootstrapper : MonoSingleton<Bootstrapper>
     {
         #region Properties
 
-        [Header("System Properties")] 
-        [SerializeField] private List<GameObject> _systems = new();
+        [Header("System Properties")]
+        [SerializeField] private List<GameObject> _systems = new(); // Must be assigned by hand to contain all System prefabs.
 
         [Header("Common Scene Indices")]
-        [SerializeField] private int _bootSceneIndex = 0;
-        [SerializeField] private int _systemSceneIndex = 1;
+        [SerializeField] private int _bootSceneIndex = 0; // Scene that system loading happens.
+        [SerializeField] private int _systemSceneIndex = 1; // Scene that all the systems will load in.
 
         private int _loadedSystemCount = 0;
+        public int LoadedSystemCount => _loadedSystemCount;
 
-        public readonly UnityEvent SystemLoadingCompleteEvent = new UnityEvent();
-        public readonly UnityEvent<string> SendLoadStateMessageEvent = new UnityEvent<string>();
-        public readonly UnityEvent<IPersistentSystem, float> SystemLoadingStateChangeEvent = new UnityEvent<IPersistentSystem, float>();
+        [Header("Events")]
+        public readonly UnityEvent<IPersistentSystem, float> LoadProgressChangeEvent = new UnityEvent<IPersistentSystem, float>();
+        public readonly UnityEvent<IPersistentSystem> SystemLoadFinishEvent = new UnityEvent<IPersistentSystem>();
+        public readonly UnityEvent<string> MessageSendEvent = new UnityEvent<string>();
+        public readonly UnityEvent BootCompleteEvent = new UnityEvent();
 
         #endregion
+
+        #region Base Methods
 
         protected override void Init()
         {
             base.Init();
             StartLoadingSystems();
         }
+
+        #endregion
+
+        #region Load Methods
 
         private void StartLoadingSystems()
         {
@@ -41,7 +50,7 @@ namespace Tetraizor.SystemManager
 
         private IEnumerator LoadSystemsAsync()
         {
-            SendLoadStateMessageEvent?.Invoke("System loading started.");
+            MessageSendEvent?.Invoke("Starting to load systems...");
 
             // Load empty scene to insert systems into.
             AsyncOperation systemSceneLoadingOperation =
@@ -56,16 +65,18 @@ namespace Tetraizor.SystemManager
             // Make system scene active to create System prefabs in.
             SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(_systemSceneIndex));
 
-            SendLoadStateMessageEvent?.Invoke("Systems scene created and set active.");
-            
+            MessageSendEvent?.Invoke("System container scene created and set active.");
+
             // Instantiate and load each system.
             foreach (GameObject systemPrefab in _systems)
             {
+                int startTime = DateTime.Now.Millisecond;
+
                 IPersistentSystem persistentSystem = LoadSystem(systemPrefab);
 
                 if (persistentSystem == null)
                 {
-                    SendLoadStateMessageEvent?.Invoke($"{systemPrefab.name} does not implement the interface 'IPersistentScene'. " +
+                    MessageSendEvent?.Invoke($"{systemPrefab.name} does not implement the interface 'IPersistentScene'. " +
                                                       $"This system will be ignored.");
                     continue;
                 }
@@ -74,19 +85,19 @@ namespace Tetraizor.SystemManager
 
                 _loadedSystemCount++;
 
-                SendLoadStateMessageEvent?.Invoke($"{persistentSystem.GetName()} finished loading.");
+                int endTime = DateTime.Now.Millisecond;
+                SystemLoadFinishEvent?.Invoke(persistentSystem);
+                MessageSendEvent?.Invoke($"{persistentSystem.GetName()} finished loading in {(endTime - startTime)} milliseconds.");
             }
 
             // Reset active scene back to boot scene.
             SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(_bootSceneIndex));
 
-            print(SceneManager.GetActiveScene().name);
-
             yield return new WaitForEndOfFrame();
 
-            SystemLoadingCompleteEvent?.Invoke();
+            BootCompleteEvent?.Invoke();
 
-            SendLoadStateMessageEvent?.Invoke("Finished loading all the systems. Loading menu scene.");
+            MessageSendEvent?.Invoke("Finished loading all the systems.");
         }
 
         public void UpdateLoadingState(IPersistentSystem system, float loadingPercentage)
@@ -94,9 +105,10 @@ namespace Tetraizor.SystemManager
             float totalLoadingPercentage =
                 ((float)_loadedSystemCount / _systems.Count) + loadingPercentage / _systems.Count;
 
-            SystemLoadingStateChangeEvent?.Invoke(system, totalLoadingPercentage);
+            LoadProgressChangeEvent?.Invoke(system, totalLoadingPercentage);
         }
 
+        // Get System from prefabs 
         private IPersistentSystem LoadSystem(GameObject systemPrefab)
         {
             GameObject systemInstance = Instantiate(systemPrefab, Vector3.zero, Quaternion.identity);
@@ -107,5 +119,7 @@ namespace Tetraizor.SystemManager
 
             return persistentSystem;
         }
+
+        #endregion
     }
 }

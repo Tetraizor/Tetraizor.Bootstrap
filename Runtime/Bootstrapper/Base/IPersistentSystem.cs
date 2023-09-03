@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace Tetraizor.SystemManager.Base
+namespace Tetraizor.Bootstrapper.Base
 {
     public interface IPersistentSystem
     {
