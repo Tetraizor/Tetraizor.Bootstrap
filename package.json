@@ -1,7 +1,7 @@
 {
   "name": "com.tetraizor.bootstrap",
   "displayName": "Bootstrap",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": {
     "name": "Umuthan Ozel",
     "email": "ozelumuthan@gmail.com",
@@ -9,7 +9,8 @@
   },
   "description": "A Bootstrap package that can work with additive scenes, and contain every system created in an isolated scene which will be loaded from boot to closing of the game, managed automatically.",
   "dependencies": {
-    "com.tetraizor.monosingleton": "https://github.com/Tetraizor/Tetraizor.MonoSingleton.git#1.2.0"
+    "com.tetraizor.monosingleton": "https://github.com/Tetraizor/Tetraizor.MonoSingleton.git#1.2.0",
+    "com.tetraizor.debugutils": "https://github.com/Tetraizor/Tetraizor.DebugUtils.git#1.0.0"
   },
   "repository": {
     "type": "git",

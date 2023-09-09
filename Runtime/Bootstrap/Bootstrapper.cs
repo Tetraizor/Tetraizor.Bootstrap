@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Collections;
-using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using Tetraizor.Bootstrap.Base;
 using Tetraizor.MonoSingleton;
+using Tetraizor.DebugUtils;
 
 namespace Tetraizor.Bootstrap
 {
@@ -28,7 +28,6 @@ namespace Tetraizor.Bootstrap
         [Header("Events")]
         public readonly UnityEvent<IPersistentSystem, float> LoadProgressChangeEvent = new UnityEvent<IPersistentSystem, float>();
         public readonly UnityEvent<IPersistentSystem> SystemLoadFinishEvent = new UnityEvent<IPersistentSystem>();
-        public readonly UnityEvent<string> MessageSendEvent = new UnityEvent<string>();
         public readonly UnityEvent BootCompleteEvent = new UnityEvent();
 
         #endregion
@@ -52,7 +51,7 @@ namespace Tetraizor.Bootstrap
 
         private IEnumerator LoadSystemsAsync()
         {
-            MessageSendEvent?.Invoke("Starting to load systems...");
+            DebugBus.LogPrint("Starting to load systems...");
 
             // Load empty scene to insert systems into.
             AsyncOperation systemSceneLoadingOperation =
@@ -67,7 +66,7 @@ namespace Tetraizor.Bootstrap
             // Make system scene active to create System prefabs in.
             SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(_systemSceneIndex));
 
-            MessageSendEvent?.Invoke("System container scene created and set active.");
+            DebugBus.LogPrint("System container scene created and set active.");
 
             // Instantiate and load each system.
             foreach (GameObject systemPrefab in _systems)
@@ -79,7 +78,7 @@ namespace Tetraizor.Bootstrap
 
                 if (persistentSystem == null)
                 {
-                    MessageSendEvent?.Invoke($"{systemPrefab.name} does not implement the interface 'IPersistentScene'. " +
+                    DebugBus.LogError($"{systemPrefab.name} does not implement the interface 'IPersistentScene'. " +
                                                       $"This system will be ignored.");
                     continue;
                 }
@@ -91,7 +90,7 @@ namespace Tetraizor.Bootstrap
 
                     if (subsystem == null)
                     {
-                        MessageSendEvent?.Invoke($"Subsystem '{subsystemPrefab.name}' does not contain a IPersistentSubsystem, prefab will be ignored.");
+                        DebugBus.LogError($"Subsystem '{subsystemPrefab.name}' does not contain a IPersistentSubsystem, prefab will be ignored.");
                         continue;
                     }
 
@@ -110,7 +109,7 @@ namespace Tetraizor.Bootstrap
                 double endTime = Time.realtimeSinceStartupAsDouble;
 
                 SystemLoadFinishEvent?.Invoke(persistentSystem);
-                MessageSendEvent?.Invoke($"{persistentSystem.GetName()} finished loading in {(int)((endTime - startTime) * 1000)} milliseconds.");
+                DebugBus.LogPrint($"{persistentSystem.GetName()} finished loading in {(int)((endTime - startTime) * 1000)} milliseconds.");
             }
 
             // Reset active scene back to boot scene.
@@ -120,7 +119,7 @@ namespace Tetraizor.Bootstrap
 
             BootCompleteEvent?.Invoke();
 
-            MessageSendEvent?.Invoke("Finished loading all systems.");
+            DebugBus.LogSuccess("Finished loading all systems.");
         }
 
         public void UpdateLoadingState(IPersistentSystem system, float loadingPercentage)

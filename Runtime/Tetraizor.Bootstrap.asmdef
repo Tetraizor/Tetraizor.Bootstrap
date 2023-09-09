@@ -2,7 +2,8 @@
     "name": "Tetraizor.Bootstrap",
     "rootNamespace": "",
     "references": [
-        "GUID:2e20b8eb9ce74e74fbcde34b0a8d4627"
+        "GUID:2e20b8eb9ce74e74fbcde34b0a8d4627",
+        "GUID:47d16755858110348b735a531a0218d9"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
